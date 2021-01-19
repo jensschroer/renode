@@ -7,8 +7,27 @@ sram: Memory.MappedMemory @ sysbus 0x20000000
 flash: Memory.MappedMemory @ sysbus 0x0
     size: 0x100000
 
+flashCtrl: MTD.K6xF_FTFE @ sysbus 0x40020000
+    flash: flash
+    ccIRQ -> nvic@18
+
 uart0: UART.K6xF_UART @ sysbus 0x4006A000
     IRQ -> nvic@31
+
+uart1: UART.K6xF_UART @ sysbus 0x4006B000
+    IRQ -> nvic@33
+
+uart2: UART.K6xF_UART @ sysbus 0x4006C000
+    IRQ -> nvic@35
+
+uart3: UART.K6xF_UART @ sysbus 0x4006D000
+    IRQ -> nvic@37
+
+uart4: UART.K6xF_UART @ sysbus 0x400EA000
+    IRQ -> nvic@66
+
+uart5: UART.K6xF_UART @ sysbus 0x400EB000
+    IRQ -> nvic@68
 
 nvic: IRQControllers.NVIC @ sysbus 0xE000E000
     systickFrequency: 120000000
@@ -21,6 +40,7 @@ cpu: CPU.CortexM @ sysbus
 mcg: Miscellaneous.K6xF_MCG @ sysbus 0x40064000
 
 sim: Miscellaneous.K6xF_SIM @ sysbus 0x40047000
+    flash: flash
 
 eth: Network.K6xF_Ethernet @ sysbus 0x400C0000
     TxIRQ -> nvic@83
@@ -35,6 +55,10 @@ phy: Network.EthernetPhysicalLayer @ eth 0
 
 rng: Miscellaneous.K6xF_RNG @ sysbus 0x40029000
     IRQ -> nvic@23
+
+adc0: Analog.K6xF_ADC @ sysbus 0x4003B000
+
+adc1: Analog.K6xF_ADC @ sysbus 0x400BB000
 
 sysbus:
     init:
