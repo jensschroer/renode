@@ -1,0 +1,285 @@
+// NXP i.MX RT1180 (dual-core: Cortex-M7 @ 800MHz + Cortex-M33 @ 300MHz)
+
+// CPUs
+
+cm7: CPU.CortexM @ sysbus
+    cpuType: "cortex-m7"
+    nvic: nvic0
+
+cm33: CPU.CortexM @ sysbus
+    cpuType: "cortex-m33"
+    nvic: nvic1
+
+// Interrupt Controllers
+
+nvic0: IRQControllers.NVIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cm7 }
+    }
+    -> cm7@0
+    systickFrequency: 800000000
+
+nvic1: IRQControllers.NVIC @ {
+        sysbus new Bus.BusPointRegistration { address: 0xE000E000; cpu: cm33 }
+    }
+    -> cm33@0
+    systickFrequency: 300000000
+
+// Memory Regions
+
+cm7_itcm: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x00000000; cpu: cm7 }
+    }
+    size: 0x40000
+
+cm7_dtcm: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x40000
+
+cm33_code_tcm: Memory.MappedMemory @ sysbus 0x0FFE0000
+    size: 0x20000
+
+cm33_system_tcm: Memory.MappedMemory @ sysbus 0x20200000
+    size: 0x20000
+
+ocram1: Memory.MappedMemory @ sysbus 0x20480000
+    size: 0x80000
+
+ocram2: Memory.MappedMemory @ sysbus 0x20500000
+    size: 0x40000
+
+cm33_boot_rom: Memory.MappedMemory @ {
+        sysbus new Bus.BusPointRegistration { address: 0x00000000; cpu: cm33 }
+    }
+    size: 0x20000
+
+cm7_boot_rom: Memory.MappedMemory @ sysbus 0x00200000
+    size: 0x28000
+
+// FlexSPI1 flash (external NOR flash, XIP region)
+// 0x38000000: CM7 secure alias, 0x28000000: CM7 non-secure alias
+flexspi1: Memory.MappedMemory @ {
+        sysbus 0x38000000;
+        sysbus 0x28000000
+    }
+    size: 0x4000000
+
+// SRAM mapped at CM33 non-secure alias (used for .data/.bss and runtime buffers)
+sram: Memory.MappedMemory @ sysbus 0x14000000
+    size: 0x100000
+
+// LPUART (non-secure and secure aliases)
+
+lpuart1: UART.NXP_LPUART @ {
+        sysbus 0x44380000;
+        sysbus 0x54380000
+    }
+    IRQ -> nvic0@19
+
+lpuart2: UART.NXP_LPUART @ {
+        sysbus 0x44390000;
+        sysbus 0x54390000
+    }
+    IRQ -> nvic0@20
+
+lpuart3: UART.NXP_LPUART @ {
+        sysbus 0x42570000;
+        sysbus 0x52570000
+    }
+    IRQ -> nvic0@68
+
+lpuart4: UART.NXP_LPUART @ {
+        sysbus 0x42580000;
+        sysbus 0x52580000
+    }
+    IRQ -> nvic0@69
+
+lpuart5: UART.NXP_LPUART @ {
+        sysbus 0x42590000;
+        sysbus 0x52590000
+    }
+    IRQ -> nvic0@70
+
+lpuart6: UART.NXP_LPUART @ {
+        sysbus 0x425A0000;
+        sysbus 0x525A0000
+    }
+    IRQ -> nvic0@71
+
+lpuart7: UART.NXP_LPUART @ {
+        sysbus 0x44570000;
+        sysbus 0x54570000
+    }
+    IRQ -> nvic0@196
+
+lpuart8: UART.NXP_LPUART @ {
+        sysbus 0x42DA0000;
+        sysbus 0x52DA0000
+    }
+    IRQ -> nvic0@197
+
+lpuart9: UART.NXP_LPUART @ {
+        sysbus 0x42D70000;
+        sysbus 0x52D70000
+    }
+    IRQ -> nvic0@198
+
+lpuart10: UART.NXP_LPUART @ {
+        sysbus 0x42D80000;
+        sysbus 0x52D80000
+    }
+    IRQ -> nvic0@199
+
+lpuart11: UART.NXP_LPUART @ {
+        sysbus 0x42D90000;
+        sysbus 0x52D90000
+    }
+    IRQ -> nvic0@200
+
+lpuart12: UART.NXP_LPUART @ {
+        sysbus 0x44580000;
+        sysbus 0x54580000
+    }
+    IRQ -> nvic0@201
+
+// GPIO
+
+gpio1: GPIOPort.IMXRT_GPIO @ sysbus 0x47400000
+    IRQ -> nvic0@10
+
+gpio2: GPIOPort.IMXRT_GPIO @ sysbus 0x43810000
+    IRQ -> nvic0@57
+
+gpio3: GPIOPort.IMXRT_GPIO @ sysbus 0x43820000
+    IRQ -> nvic0@59
+
+gpio4: GPIOPort.IMXRT_GPIO @ sysbus 0x43830000
+    IRQ -> nvic0@61
+
+gpio5: GPIOPort.IMXRT_GPIO @ sysbus 0x43840000
+    IRQ -> nvic0@61
+
+gpio6: GPIOPort.IMXRT_GPIO @ sysbus 0x43850000
+    IRQ -> nvic0@61
+
+// GPT Timers
+
+gpt1: Timers.IMX_GPTimer @ sysbus 0x446C0000
+    IRQ -> nvic0@209
+
+gpt2: Timers.IMX_GPTimer @ sysbus 0x42EC0000
+    IRQ -> nvic0@210
+
+// LPSPI
+
+lpspi1: SPI.IMXRT_LPSPI @ sysbus 0x44360000
+    IRQ -> nvic0@16
+
+lpspi2: SPI.IMXRT_LPSPI @ sysbus 0x44370000
+    IRQ -> nvic0@17
+
+lpspi3: SPI.IMXRT_LPSPI @ sysbus 0x42550000
+    IRQ -> nvic0@65
+
+lpspi4: SPI.IMXRT_LPSPI @ sysbus 0x42560000
+    IRQ -> nvic0@66
+
+lpspi5: SPI.IMXRT_LPSPI @ sysbus 0x42D50000
+    IRQ -> nvic0@194
+
+lpspi6: SPI.IMXRT_LPSPI @ sysbus 0x42D60000
+    IRQ -> nvic0@195
+
+// CCM (clock control module) — MappedMemory so reads return last written value
+ccm_ctrl: Memory.MappedMemory @ {
+        sysbus 0x44450000;
+        sysbus 0x54450000
+    }
+    size: 0x10000
+
+// ANADIG_PLL — reads return (written_value | 0x60000000) so PLL lock/clock
+// status bits are always set while PFD gate writes also persist.
+anadig_pll: Miscellaneous.NXP_ANADIGStub @ {
+        sysbus 0x44484000;
+        sysbus 0x54484000
+    }
+    size: 0x4000
+    readOrMask: 0x20000000
+
+// S3MU (EdgeLock Enclave Messaging Unit) — needs TSR (offset 0x124) to
+// report TX-ready.  Using NXP_ANADIGStub with readOrMask=0xF so that
+// the low 4 bits (TX channel ready flags) are always set on reads.
+// Auto-stable disabled so gate/stable logic doesn't corrupt MU data.
+ele_mu: Miscellaneous.NXP_ANADIGStub @ {
+        sysbus 0x47540000;
+        sysbus 0x57540000
+    }
+    size: 0x10000
+    readOrMask: 0xF
+    enableAutoStable: false
+
+// Peripherals that firmware does read-modify-write on (need value persistence)
+blk_ctrl_s_aon: Memory.MappedMemory @ {
+        sysbus 0x444F0000;
+        sysbus 0x544F0000
+    }
+    size: 0x10000
+
+blk_ctrl_wakeup: Memory.MappedMemory @ {
+        sysbus 0x42420000;
+        sysbus 0x52420000
+    }
+    size: 0x10000
+
+gpc: Memory.MappedMemory @ {
+        sysbus 0x44470000;
+        sysbus 0x54470000
+    }
+    size: 0x10000
+
+src: Memory.MappedMemory @ {
+        sysbus 0x44460000;
+        sysbus 0x54460000
+    }
+    size: 0x10000
+
+// SRC must be a Tag (returns 0) — firmware writes busy bit and polls for clear
+
+iomuxc_aon: Memory.MappedMemory @ {
+        sysbus 0x443C0000;
+        sysbus 0x543C0000
+    }
+    size: 0x10000
+
+iomuxc: Memory.MappedMemory @ {
+        sysbus 0x42A10000;
+        sysbus 0x52A10000
+    }
+    size: 0x10000
+
+anadig: Memory.MappedMemory @ {
+        sysbus 0x44480000;
+        sysbus 0x54480000
+    }
+    size: 0x4000
+
+// Stub peripherals (Tags)
+
+sysbus:
+    init:
+        Tag <0x442D0000 0x10000> "LPWDOG1"
+        Tag <0x442E0000 0x10000> "LPWDOG2"
+        Tag <0x42490000 0x10000> "RTWDOG3"
+        Tag <0x424A0000 0x10000> "RTWDOG4"
+        Tag <0x424B0000 0x10000> "RTWDOG5"
+        Tag <0x44220000 0x10000> "MU1_A"
+        Tag <0x44230000 0x10000> "MU1_B"
+        Tag <0x44430000 0x10000> "ROMCP1"
+        Tag <0x542D0000 0x10000> "LPWDOG1_S"
+        Tag <0x542E0000 0x10000> "LPWDOG2_S"
+        Tag <0x52490000 0x10000> "RTWDOG3_S"
+        Tag <0x524A0000 0x10000> "RTWDOG4_S"
+        Tag <0x524B0000 0x10000> "RTWDOG5_S"
+        Tag <0x54220000 0x10000> "MU1_A_S"
+        Tag <0x54230000 0x10000> "MU1_B_S"
+        Tag <0x54430000 0x10000> "ROMCP1_S"
+        Tag <0x44400000 0x10000> "SRC_GEN"
+        Tag <0x54400000 0x10000> "SRC_GEN_S"

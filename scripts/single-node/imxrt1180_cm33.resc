@@ -1,0 +1,22 @@
+:name: i.MX RT1180 CM33
+:description: This script runs firmware on the i.MX RT1180 Cortex-M33 core.
+
+i @platforms/cpus/imxrt1180.repl
+
+$bin?=@path/to/your/firmware_cm33.elf
+
+macro reset
+"""
+    sysbus LoadELF $bin cpu=cm33
+    sysbus LoadSymbolsFrom $bin
+    cm33 VectorTableOffset `sysbus GetSymbolAddress "_vector_table"`
+    cm7 IsHalted true
+
+    # Stub EdgeLock Enclave API calls — Renode has no ELE model, so patch
+    # ELE_BaseAPI_GetFwStatus and ELE_BaseAPI_ReleaseRDC to return 0.
+    # Thumb: MOVS R0,#0 (0x2000) + BX LR (0x4770) = 0x47702000
+    sysbus WriteDoubleWord `sysbus GetSymbolAddress "ELE_BaseAPI_GetFwStatus"` 0x47702000
+    sysbus WriteDoubleWord `sysbus GetSymbolAddress "ELE_BaseAPI_ReleaseRDC"` 0x47702000
+"""
+
+runMacro $reset
